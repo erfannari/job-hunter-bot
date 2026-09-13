@@ -68,11 +68,9 @@ export interface MatchResult {
   profile?: JobProfile;
   isMatch: boolean;
   reasons: string[];
-  reasonsFa?: string[];
   concerns: string[];
   breakdown: MatchScoreBreakdown;
   recommendation: 'strongly_apply' | 'apply' | 'consider' | 'skip';
-  summaryFa?: string;
 }
 
 export interface SearchQuery {
