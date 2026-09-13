@@ -185,10 +185,21 @@ export class JobRepository {
   public getMatchingJobs(minScore: number = 60, limit: number = 20): Job[] {
     const rows = db.prepare(`
       SELECT * FROM jobs
-      WHERE match_score >= ? AND status != 'ignored'
+      WHERE match_score >= ? AND profile IS NOT NULL AND status != 'ignored'
       ORDER BY match_score DESC, discovered_at DESC
       LIMIT ?
     `).all(minScore, limit) as JobDbRow[];
+
+    return rows.map((r) => this.mapRowToJob(r));
+  }
+
+  public getMatchingJobsByProfile(profile: JobProfile, minScore: number = 60, limit: number = 20): Job[] {
+    const rows = db.prepare(`
+      SELECT * FROM jobs
+      WHERE match_score >= ? AND profile = ? AND status != 'ignored'
+      ORDER BY match_score DESC, discovered_at DESC
+      LIMIT ?
+    `).all(minScore, profile, limit) as JobDbRow[];
 
     return rows.map((r) => this.mapRowToJob(r));
   }
@@ -214,16 +225,28 @@ export class JobRepository {
     return rows.map((r) => this.mapRowToJob(r));
   }
 
+  public getAppliedJobs(): Job[] {
+    const rows = db.prepare(`
+      SELECT * FROM jobs
+      WHERE status = 'applied'
+      ORDER BY updated_at DESC
+    `).all() as JobDbRow[];
+
+    return rows.map((r) => this.mapRowToJob(r));
+  }
+
   public getJobStats(): {
     totalJobs: number;
     matchingJobs: number;
     savedJobs: number;
+    appliedJobs: number;
     ignoredJobs: number;
     notificationsSent: number;
   } {
     const total = db.prepare('SELECT COUNT(*) as cnt FROM jobs').get() as { cnt: number };
     const matching = db.prepare('SELECT COUNT(*) as cnt FROM jobs WHERE match_score >= 60').get() as { cnt: number };
     const saved = db.prepare("SELECT COUNT(*) as cnt FROM jobs WHERE status = 'saved'").get() as { cnt: number };
+    const applied = db.prepare("SELECT COUNT(*) as cnt FROM jobs WHERE status = 'applied'").get() as { cnt: number };
     const ignored = db.prepare("SELECT COUNT(*) as cnt FROM jobs WHERE status = 'ignored'").get() as { cnt: number };
     const notifs = db.prepare('SELECT COUNT(*) as cnt FROM job_notifications').get() as { cnt: number };
 
@@ -231,6 +254,7 @@ export class JobRepository {
       totalJobs: total.cnt,
       matchingJobs: matching.cnt,
       savedJobs: saved.cnt,
+      appliedJobs: applied.cnt,
       ignoredJobs: ignored.cnt,
       notificationsSent: notifs.cnt,
     };

@@ -132,16 +132,140 @@ export class JobNormalizer {
       }
     }
 
-    // If source is a local Georgian job board (like jobs.ge / hr.ge), default to georgia_onsite
     return 'unknown';
+  }
+
+  /**
+   * Checks if job strictly requires Russian or other non-English language (excludes English speakers)
+   */
+  public detectLanguageMismatch(title: string, description: string): { isMismatch: boolean; reason?: string } {
+    const text = `${title} ${description}`;
+    const lower = text.toLowerCase();
+
+    // 1. Check for explicit Russian requirement keywords
+    for (const kw of HUNTER_PROFILE.languages.russianKeywords) {
+      if (lower.includes(kw)) {
+        return {
+          isMismatch: true,
+          reason: `Company strictly requires Russian: "${kw}"`,
+        };
+      }
+    }
+
+    // 2. Check for other mandatory non-English foreign languages
+    const otherForeignRequired = [
+      'german required',
+      'german c1',
+      'fluent in german',
+      'french required',
+      'fluent in french',
+      'italian required',
+      'spanish required',
+    ];
+
+    for (const kw of otherForeignRequired) {
+      if (lower.includes(kw)) {
+        return {
+          isMismatch: true,
+          reason: `Company strictly requires non-English language: "${kw}"`,
+        };
+      }
+    }
+
+    return { isMismatch: false };
   }
 
   /**
    * Detects target profile (frontend vs design)
    */
   public detectProfile(title: string, description: string, skills: string[]): JobProfile | undefined {
+    // Language check: Disqualify jobs requiring Russian or non-English
+    const langCheck = this.detectLanguageMismatch(title, description);
+    if (langCheck.isMismatch) {
+      return undefined;
+    }
+
     const combined = `${title} ${description}`.toLowerCase();
     const titleLower = title.toLowerCase();
+
+    // Check strict title disqualifiers (backend languages, DevOps, non-tech, internships/trainees)
+    const titleDisqualifiers = [
+      'golang',
+      'go developer',
+      'go engineer',
+      'backend',
+      'back-end',
+      'java developer',
+      'java engineer',
+      'c#',
+      '.net',
+      'dotnet',
+      'net trainee',
+      'php',
+      'python',
+      'ruby',
+      'c++',
+      'rust',
+      'devops',
+      'sre',
+      'sysadmin',
+      'system administrator',
+      'data engineer',
+      'data scientist',
+      'machine learning',
+      'qa engineer',
+      'qa automation',
+      'tester',
+      'quality assurance',
+      'trainee',
+      'intern',
+      'internship',
+      'sales',
+      'accountant',
+      'marketing',
+      'social media',
+      'content lead',
+      'hr manager',
+      'recruiter',
+      'ios developer',
+      'android developer',
+      'flutter developer',
+      'creatio',
+      'odoo',
+      'architect',
+    ];
+
+    const hasStrongFrontendTitle =
+      titleLower.includes('frontend') ||
+      titleLower.includes('front-end') ||
+      titleLower.includes('angular') ||
+      titleLower.includes('vue') ||
+      titleLower.includes('nuxt') ||
+      titleLower.includes('ui developer');
+
+    const hasGenericWebTitle =
+      titleLower.includes('web developer') ||
+      titleLower.includes('javascript developer') ||
+      titleLower.includes('typescript developer');
+
+    const hasExplicitDesignTitle =
+      titleLower.includes('ui designer') ||
+      titleLower.includes('ux designer') ||
+      titleLower.includes('ui/ux') ||
+      titleLower.includes('ux/ui') ||
+      titleLower.includes('product designer') ||
+      titleLower.includes('product design') ||
+      titleLower.includes('user experience designer') ||
+      titleLower.includes('user interface designer');
+
+    // If title has a disqualifier, it can ONLY pass if it has a strong frontend/design title (e.g. "Frontend Engineer (.NET Backend team)")
+    for (const disq of titleDisqualifiers) {
+      if (titleLower.includes(disq)) {
+        if (!hasStrongFrontendTitle && !hasExplicitDesignTitle) {
+          return undefined;
+        }
+      }
+    }
 
     const frontendSignals = [
       'frontend',
@@ -155,7 +279,6 @@ export class JobNormalizer {
       'css',
       'web developer',
       'ui developer',
-      'react', // recognize as frontend even if not primary tech
     ];
 
     const designSignals = [
@@ -176,26 +299,31 @@ export class JobNormalizer {
 
     // Direct title matching gets high weight
     for (const s of frontendSignals) {
-      if (titleLower.includes(s)) feScore += 5;
+      if (titleLower.includes(s)) feScore += 6;
       else if (combined.includes(s)) feScore += 1;
     }
 
     for (const s of skills) {
-      if (['Angular', 'Vue', 'Nuxt', 'TypeScript', 'JavaScript', 'HTML/CSS'].includes(s)) feScore += 3;
+      if (['Angular', 'Vue', 'Nuxt', 'TypeScript', 'JavaScript', 'HTML/CSS'].includes(s)) feScore += 2;
     }
 
     for (const s of designSignals) {
-      if (titleLower.includes(s)) deScore += 5;
+      if (titleLower.includes(s)) deScore += 6;
       else if (combined.includes(s)) deScore += 1;
     }
 
     for (const s of skills) {
-      if (['Figma', 'UI/UX', 'Product Design', 'Design Systems', 'Wireframing', 'User Research'].includes(s)) deScore += 3;
+      if (['Figma', 'UI/UX', 'Product Design', 'Design Systems', 'Wireframing', 'User Research'].includes(s)) deScore += 2;
     }
 
-    // Require at least a baseline of relevant frontend/design signals
-    if (feScore >= 3 && feScore >= deScore) return 'frontend';
-    if (deScore >= 3 && deScore > feScore) return 'design';
+    // Explicit title match or strong profile match required
+    if (hasStrongFrontendTitle || (hasGenericWebTitle && feScore >= 6) || (feScore >= 8 && feScore >= deScore)) {
+      return 'frontend';
+    }
+
+    if (hasExplicitDesignTitle || (titleLower.includes('design') && deScore >= 6)) {
+      return 'design';
+    }
 
     return undefined;
   }

@@ -3,12 +3,24 @@ import { config } from '../config/config.js';
 import { logger } from '../utils/logger.js';
 import { handleStartCommand } from './commands/start.js';
 import { handleHelpCommand } from './commands/help.js';
-import { handleJobsCommand, handleLatestCommand } from './commands/jobs.js';
+import {
+  handleDesignJobsCommand,
+  handleFrontendJobsCommand,
+  handleJobsCommand,
+  handleLatestCommand,
+} from './commands/jobs.js';
+import { handleAppliedCommand } from './commands/applied.js';
 import { handleResumeCallback, handleResumeCommand } from './commands/resume.js';
 import { handleSavedCommand } from './commands/saved.js';
 import { handleSettingsCommand } from './commands/settings.js';
 import { handleStatsCommand } from './commands/stats.js';
-import { handleSaveCallback, handleUnsaveCallback, handleIgnoreCallback } from './callbacks/job.actions.js';
+import {
+  handleApplyCallback,
+  handleIgnoreCallback,
+  handleSaveCallback,
+  handleUnapplyCallback,
+  handleUnsaveCallback,
+} from './callbacks/job.actions.js';
 
 export function createBot(): Bot {
   const bot = new Bot(config.TELEGRAM_BOT_TOKEN);
@@ -31,14 +43,19 @@ export function createBot(): Bot {
   // Register command handlers
   bot.command('start', handleStartCommand);
   bot.command('help', handleHelpCommand);
-  bot.command('jobs', handleJobsCommand);
+  bot.command(['frontend', 'fe'], handleFrontendJobsCommand);
+  bot.command(['design', 'uiux', 'ux'], handleDesignJobsCommand);
+  bot.command(['jobs', 'all'], handleJobsCommand);
   bot.command('latest', handleLatestCommand);
   bot.command('saved', handleSavedCommand);
+  bot.command(['applied', 'checked'], handleAppliedCommand);
   bot.command(['resume', 'cv', 'resumes'], handleResumeCommand);
   bot.command('settings', handleSettingsCommand);
   bot.command('stats', handleStatsCommand);
 
   // Register interactive callback queries for job cards & resumes
+  bot.callbackQuery(/^apply:/, handleApplyCallback);
+  bot.callbackQuery(/^unapply:/, handleUnapplyCallback);
   bot.callbackQuery(/^save:/, handleSaveCallback);
   bot.callbackQuery(/^unsave:/, handleUnsaveCallback);
   bot.callbackQuery(/^ignore:/, handleIgnoreCallback);
@@ -55,17 +72,20 @@ export function createBot(): Bot {
 export async function setupBotCommands(bot: Bot): Promise<void> {
   try {
     await bot.api.setMyCommands([
-      { command: 'start', description: 'Welcome message & subscribe to alerts' },
-      { command: 'jobs', description: 'View active matching vacancies' },
-      { command: 'latest', description: 'View latest discovered jobs' },
-      { command: 'saved', description: 'View saved bookmarks' },
-      { command: 'resume', description: 'Download Erfan & Fatemeh resume PDFs' },
-      { command: 'settings', description: 'View search & filtering settings' },
-      { command: 'stats', description: 'View scanner & database metrics' },
-      { command: 'help', description: 'Help & command overview' },
+      { command: 'frontend', description: '🟦 View matching Frontend developer jobs' },
+      { command: 'design', description: '🟪 View matching UI/UX & Product Design jobs' },
+      { command: 'all', description: '📋 View all matching vacancies (Frontend + Design)' },
+      { command: 'applied', description: '✅ View checked & applied applications' },
+      { command: 'latest', description: '⚡ View latest discovered jobs' },
+      { command: 'saved', description: '⭐ View saved bookmarks' },
+      { command: 'resume', description: '📄 Download Erfan & Fatemeh resume PDFs' },
+      { command: 'stats', description: '📊 View scanner & database metrics' },
+      { command: 'settings', description: '⚙️ View search & filtering settings' },
+      { command: 'help', description: '❓ Help & command overview' },
     ]);
     logger.info('Registered Telegram bot menu commands successfully');
   } catch (error) {
     logger.warn('Could not register bot menu commands (bot may still operate):', error);
   }
 }
+

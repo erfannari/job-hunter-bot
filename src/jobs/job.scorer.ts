@@ -1,5 +1,6 @@
 import { geminiAnalyzer } from '../ai/analyzer.js';
 import { config } from '../config/config.js';
+import { jobNormalizer } from './job.normalizer.js';
 import { HUNTER_PROFILE } from './profiles.js';
 import { Job, MatchResult, MatchScoreBreakdown } from './types.js';
 
@@ -11,14 +12,12 @@ export class JobScorer {
     const reasons: string[] = [];
     const concerns: string[] = [];
 
-    const fullText = `${job.title} ${job.description}`.toLowerCase();
-    const profile = job.profile;
-
-    // If job does not belong to Frontend or Design profile, reject as irrelevant
-    if (!profile) {
-      concerns.push('Role does not match Frontend or Design target profiles');
+    // Language requirement check (English required, Russian/non-English disqualified)
+    const langCheck = jobNormalizer.detectLanguageMismatch(job.title, job.description);
+    if (langCheck.isMismatch) {
+      concerns.push(langCheck.reason || 'Requires Russian or non-English language (English-only candidate)');
       return {
-        score: 15,
+        score: 0,
         profile: undefined,
         isMatch: false,
         reasons: [],
@@ -27,10 +26,35 @@ export class JobScorer {
           techMatch: 0,
           experienceMatch: 0,
           roleMatch: 0,
-          locationMatch: job.locationType === 'georgia_onsite' ? 10 : 0,
+          locationMatch: 0,
           seniorityMatch: 0,
           workplaceMatch: 0,
-          freshnessMatch: 5,
+          freshnessMatch: 0,
+        },
+        recommendation: 'skip',
+      };
+    }
+
+    const fullText = `${job.title} ${job.description}`.toLowerCase();
+    const profile = job.profile;
+
+    // If job does not belong to Frontend or Design profile, reject as irrelevant
+    if (!profile) {
+      concerns.push('Role does not match Frontend or Design target profiles');
+      return {
+        score: 0,
+        profile: undefined,
+        isMatch: false,
+        reasons: [],
+        concerns,
+        breakdown: {
+          techMatch: 0,
+          experienceMatch: 0,
+          roleMatch: 0,
+          locationMatch: 0,
+          seniorityMatch: 0,
+          workplaceMatch: 0,
+          freshnessMatch: 0,
         },
         recommendation: 'skip',
       };
@@ -45,10 +69,12 @@ export class JobScorer {
     let freshnessMatch = 0;
     let penalty = 0;
 
+    const normTitle = (job.normalizedTitle || job.title || '').toLowerCase();
+
     // 1. Role / Title Match (Max 15)
     if (profile === 'frontend') {
       const isTargetTitle = HUNTER_PROFILE.frontend.supportedTitles.some((t) =>
-        job.normalizedTitle.includes(t) || job.title.toLowerCase().includes(t)
+        normTitle.includes(t) || job.title.toLowerCase().includes(t)
       );
       if (isTargetTitle) {
         roleMatch = 15;
@@ -61,7 +87,7 @@ export class JobScorer {
       }
     } else {
       const isTargetDesignTitle = HUNTER_PROFILE.design.supportedTitles.some((t) =>
-        job.normalizedTitle.includes(t) || job.title.toLowerCase().includes(t)
+        normTitle.includes(t) || job.title.toLowerCase().includes(t)
       );
       if (isTargetDesignTitle) {
         roleMatch = 15;
@@ -205,8 +231,16 @@ export class JobScorer {
     // 8. Negative Penalties
     if (profile === 'frontend') {
       for (const neg of HUNTER_PROFILE.frontend.negativeKeywords) {
-        if (job.normalizedTitle.includes(neg)) {
-          penalty += 35;
+        if (normTitle.includes(neg) || job.title.toLowerCase().includes(neg)) {
+          penalty += 80;
+          concerns.push(`Negative title match: contains "${neg}"`);
+          break;
+        }
+      }
+    } else if (profile === 'design') {
+      for (const neg of HUNTER_PROFILE.design.negativeKeywords) {
+        if (normTitle.includes(neg) || job.title.toLowerCase().includes(neg)) {
+          penalty += 80;
           concerns.push(`Negative title match: contains "${neg}"`);
           break;
         }
@@ -274,6 +308,19 @@ export class JobScorer {
       const aiAnalysis = await geminiAnalyzer.analyzeJob(job);
       if (!aiAnalysis) {
         return baseResult;
+      }
+
+      if (aiAnalysis.languageCompatible === false) {
+        const langConcerns = Array.from(new Set(['Incompatible language requirement (Requires Russian or non-English language)', ...aiAnalysis.concerns, ...baseResult.concerns]));
+        return {
+          score: 0,
+          profile: undefined,
+          isMatch: false,
+          reasons: [],
+          concerns: langConcerns,
+          breakdown: baseResult.breakdown,
+          recommendation: 'skip',
+        };
       }
 
       // Blend AI score with rule-based heuristics

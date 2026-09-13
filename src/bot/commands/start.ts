@@ -35,8 +35,12 @@ export async function handleStartCommand(ctx: CommandContext<Context>) {
     '📍 *Location:* Georgia 🇬🇪',
     '',
     "I'll prioritize fresh jobs and filter them based on your experience.",
-    '',
-    '💡 You are now subscribed to automated job alerts. Type /help to see all available commands.',
+    '💡 *Quick Actions:*',
+    '• /frontend - View Frontend jobs',
+    '• /design - View UI/UX & Design jobs',
+    '• /all - View all matching vacancies',
+    '• /resume - Download CV files',
+    '• /help - Full command list',
   ].join('\n');
 
   const profileImagePath = path.resolve(process.cwd(), 'profile.jpeg');

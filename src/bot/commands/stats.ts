@@ -19,6 +19,7 @@ export async function handleStatsCommand(ctx: CommandContext<Context>) {
     `• *Total Jobs Tracked:* ${stats.totalJobs}`,
     `• *Matching Jobs (≥${config.MIN_MATCH_SCORE}%):* ${stats.matchingJobs}`,
     `• *Saved Bookmarks:* ${stats.savedJobs}`,
+    `• *Checked / Applied:* ${stats.appliedJobs}`,
     `• *Ignored Jobs:* ${stats.ignoredJobs}`,
     `• *Telegram Alerts Sent:* ${stats.notificationsSent}`,
     '',

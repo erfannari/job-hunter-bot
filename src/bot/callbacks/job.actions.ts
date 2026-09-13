@@ -59,6 +59,70 @@ export async function handleUnsaveCallback(ctx: CallbackQueryContext<Context>) {
   }
 }
 
+export async function handleApplyCallback(ctx: CallbackQueryContext<Context>) {
+  const data = ctx.callbackQuery.data;
+  if (!data) return;
+
+  const jobId = data.replace('apply:', '');
+  const job = jobRepository.findJobById(jobId);
+
+  if (!job) {
+    await ctx.answerCallbackQuery({ text: 'Job not found in database.' });
+    return;
+  }
+
+  jobRepository.updateJobStatus(jobId, 'applied');
+  job.status = 'applied';
+
+  logger.info(`[Bot] User marked job as CHECKED/APPLIED: ${job.title} (${job.id})`);
+
+  await ctx.answerCallbackQuery({ text: '✅ Marked as Checked / Applied!' });
+
+  try {
+    const updatedCard = jobFormatter.formatJobCard(job);
+    const updatedMarkup = jobFormatter.createJobKeyboard(job);
+
+    await ctx.editMessageText(updatedCard, {
+      reply_markup: updatedMarkup,
+      parse_mode: 'Markdown',
+    });
+  } catch (err) {
+    logger.debug('Could not update message for apply callback:', err);
+  }
+}
+
+export async function handleUnapplyCallback(ctx: CallbackQueryContext<Context>) {
+  const data = ctx.callbackQuery.data;
+  if (!data) return;
+
+  const jobId = data.replace('unapply:', '');
+  const job = jobRepository.findJobById(jobId);
+
+  if (!job) {
+    await ctx.answerCallbackQuery({ text: 'Job not found in database.' });
+    return;
+  }
+
+  jobRepository.updateJobStatus(jobId, 'sent');
+  job.status = 'sent';
+
+  logger.info(`[Bot] User unmarked job: ${job.title} (${job.id})`);
+
+  await ctx.answerCallbackQuery({ text: 'Marked as Unchecked.' });
+
+  try {
+    const updatedCard = jobFormatter.formatJobCard(job);
+    const updatedMarkup = jobFormatter.createJobKeyboard(job);
+
+    await ctx.editMessageText(updatedCard, {
+      reply_markup: updatedMarkup,
+      parse_mode: 'Markdown',
+    });
+  } catch (err) {
+    logger.debug('Could not update message for unapply callback:', err);
+  }
+}
+
 export async function handleIgnoreCallback(ctx: CallbackQueryContext<Context>) {
   const data = ctx.callbackQuery.data;
   if (!data) return;

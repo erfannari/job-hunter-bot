@@ -85,8 +85,13 @@ You are an expert AI career agent evaluating job postings for a specific candida
 3. **Location Target**:
    - Georgia 🇬🇪 (Tbilisi, Batumi, Kutaisi, or remote jobs explicitly available from Georgia).
    - Foreign-restricted remote jobs (e.g., US-only, UK-only) are NOT compatible.
-4. **Negative Signals / Disqualifiers**:
-   - Pure Backend (Java, PHP, C#/.NET, Python backend only), DevOps, Data engineering, internships, or non-tech jobs.
+4. **Language & Workplace Compatibility**:
+   - Candidate communicates fluently in **English** (does not speak Russian/Georgian/German).
+   - The job posting itself may be written in English, Georgian, or Russian. That is completely OK.
+   - What is required is that the **company and team are OK with English** and accept English-speaking candidates.
+   - Only mark "languageCompatible": false (and recommendation: "skip", matchScore: 0) if the company strictly requires Russian or local language as mandatory and does NOT accept English.
+5. **Negative Signals / Disqualifiers**:
+   - Pure Backend (Java, PHP, C#/.NET, Python backend only, Golang), DevOps, Data engineering, internships, or non-tech jobs.
 
 ### Job To Analyze:
 - **Title**: ${job.title}
@@ -108,6 +113,7 @@ Evaluate this job strictly and objectively. Return a JSON object matching this e
   "experienceCompatible": boolean,
   "technologies": string[],
   "locationCompatible": boolean,
+  "languageCompatible": boolean,
   "workplaceType": "onsite" | "hybrid" | "remote" | "unknown",
   "visaSponsorship": "yes" | "no" | "unknown",
   "relocationSupport": "yes" | "no" | "unknown",

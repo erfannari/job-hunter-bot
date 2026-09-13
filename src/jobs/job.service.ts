@@ -54,6 +54,11 @@ export class JobService {
           isNew,
         });
       }
+
+      // Small throttling delay to stay comfortably within AI rate limits
+      if (normalized.profile) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      }
     }
 
     logger.info(`[JobService] Scan complete. Total matching jobs (>= ${config.MIN_MATCH_SCORE}%): ${results.length}`);

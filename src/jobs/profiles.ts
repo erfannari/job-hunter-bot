@@ -26,10 +26,17 @@ export interface LocationConfig {
   remoteDisallowKeywords: string[];
 }
 
+export interface LanguageConfig {
+  preferred: string[];
+  disallowedRequiredLanguages: string[];
+  russianKeywords: string[];
+}
+
 export interface HunterProfileConfig {
   frontend: FrontendProfileConfig;
   design: DesignProfileConfig;
   location: LocationConfig;
+  languages: LanguageConfig;
 }
 
 export const HUNTER_PROFILE: HunterProfileConfig = {
@@ -78,18 +85,48 @@ export const HUNTER_PROFILE: HunterProfileConfig = {
       'frontend',
     ],
     negativeKeywords: [
+      'golang',
+      'go developer',
+      'go engineer',
       'backend developer',
+      'back-end developer',
+      'backend engineer',
+      'back-end engineer',
       'java developer',
+      'java engineer',
       'c# developer',
       '.net developer',
+      'dotnet developer',
       'php developer',
+      'php engineer',
+      'python developer',
       'python backend',
+      'ruby developer',
+      'ruby on rails',
+      'c++ developer',
+      'rust developer',
       'devops engineer',
+      'devops',
+      'sre',
+      'cloud engineer',
+      'system administrator',
+      'sysadmin',
       'data engineer',
+      'data scientist',
+      'machine learning',
+      'ai engineer',
       'internship',
       'qa engineer',
+      'qa automation',
+      'tester',
       'sales manager',
+      'sales',
       'accountant',
+      'marketing',
+      'social media',
+      'seo specialist',
+      'recruiter',
+      'hr manager',
     ],
   },
   design: {
@@ -135,6 +172,12 @@ export const HUNTER_PROFILE: HunterProfileConfig = {
       'architect',
       'marketing manager',
       'sales',
+      'accountant',
+      'social media',
+      'backend',
+      'golang',
+      'java',
+      'devops',
     ],
   },
   location: {
@@ -163,6 +206,24 @@ export const HUNTER_PROFILE: HunterProfileConfig = {
       'eu citizens only',
       'latin america only',
       'apac only',
+    ],
+  },
+  languages: {
+    preferred: ['english'],
+    disallowedRequiredLanguages: ['russian', 'german', 'french', 'spanish', 'italian'],
+    russianKeywords: [
+      'russian mandatory',
+      'russian is mandatory',
+      'russian required',
+      'russian is required',
+      'must speak russian',
+      'fluent russian required',
+      'native russian required',
+      'russian only',
+      'обязательно русский',
+      'обязательное знание русского',
+      'требуется свободный русский',
+      'только с русским языком',
     ],
   },
 };
