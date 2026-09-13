@@ -1,4 +1,3 @@
-import { headHunterSource } from './headhunter/headhunter.source.js';
 import { jobsGeSource } from './jobsge/jobsge.source.js';
 import { linkedInSource } from './linkedin/linkedin.source.js';
 import { JobSource } from './source.interface.js';
@@ -7,10 +6,10 @@ export class SourceRegistry {
   private sources: Map<string, JobSource> = new Map();
 
   constructor() {
-    // Register all supported sources for Georgia
+    // Register active job boards for Georgia
     this.register(jobsGeSource);
     this.register(linkedInSource);
-    this.register(headHunterSource);
+    // HeadHunter.ge is disabled (requires Russian phone/accounts)
   }
 
   public register(source: JobSource): void {

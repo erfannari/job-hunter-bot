@@ -15,7 +15,7 @@ interface HeadHunterJobItem {
 export class HeadHunterSource implements JobSource {
   public readonly name = 'HeadHunter.ge';
   public readonly baseUrl = 'https://tbilisi.headhunter.ge';
-  public readonly isEnabled = true;
+  public readonly isEnabled = false;
 
   private readonly userAgent =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
