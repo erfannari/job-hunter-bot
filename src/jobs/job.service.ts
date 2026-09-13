@@ -39,10 +39,42 @@ export class JobService {
 
     for (const raw of allRawJobs) {
       const normalized = jobNormalizer.normalize(raw);
-      const match = await jobScorer.scoreJobWithAI(normalized);
+      const existing = jobRepository.findJobById(normalized.id);
 
-      normalized.matchScore = match.score;
-      normalized.matchReason = match.reasons.join('; ');
+      let match: MatchResult;
+      if (existing && existing.matchScore !== undefined) {
+        // Reuse cached score and match reason from previous scan
+        const reasons = existing.matchReason ? existing.matchReason.split('; ') : [];
+        match = {
+          score: existing.matchScore,
+          profile: existing.profile,
+          isMatch: existing.matchScore >= config.MIN_MATCH_SCORE,
+          reasons,
+          concerns: [],
+          breakdown: {
+            techMatch: 0,
+            experienceMatch: 0,
+            roleMatch: 0,
+            locationMatch: 0,
+            seniorityMatch: 0,
+            workplaceMatch: 0,
+            freshnessMatch: 0,
+          },
+          recommendation: existing.matchScore >= 85 ? 'strongly_apply' : 'apply',
+        };
+        normalized.matchScore = existing.matchScore;
+        normalized.matchReason = existing.matchReason;
+        normalized.status = existing.status;
+      } else {
+        match = await jobScorer.scoreJobWithAI(normalized);
+        normalized.matchScore = match.score;
+        normalized.matchReason = match.reasons.join('; ');
+
+        // Small throttling delay to stay comfortably within AI rate limits for new jobs
+        if (normalized.profile) {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+        }
+      }
 
       // Save to database
       const isNew = jobRepository.saveJob(normalized);
@@ -53,11 +85,6 @@ export class JobService {
           match,
           isNew,
         });
-      }
-
-      // Small throttling delay to stay comfortably within AI rate limits
-      if (normalized.profile) {
-        await new Promise((resolve) => setTimeout(resolve, 800));
       }
     }
 

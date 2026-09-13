@@ -38,9 +38,9 @@ export class GeminiJobAnalyzer {
     const prompt = this.buildPrompt(job);
 
     try {
-      // Use gemini-3.6-flash
+      // Use gemini-2.5-flash for high quality and generous limits
       const response = await this.ai.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
