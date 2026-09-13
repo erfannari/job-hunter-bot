@@ -15,22 +15,25 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node.js
+      - name: ⚙️ Setup Node.js (v22 LTS)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: 📦 Install Dependencies
         run: npm ci
 
-      - name: 🗄️ Restore Database Cache
+      - name: 📁 Ensure Data Directory
+        run: mkdir -p data
+
+      - name: 🗄️ Cache Jobs Database
         uses: actions/cache@v4
         with:
-          path: data/jobs.db
-          key: jobs-db-${{ github.run_id }}
+          path: data
+          key: jobs-data-${{ runner.os }}-${{ github.run_id }}
           restore-keys: |
-            jobs-db-
+            jobs-data-${{ runner.os }}-
 
       - name: 🤖 Run Multi-Source Scanner & Gemini AI
         env:
@@ -42,9 +45,3 @@ jobs:
           MIN_MATCH_SCORE: 60
         run: npm run scan
 
-      - name: 💾 Save Updated Database Cache
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: data/jobs.db
-          key: jobs-db-${{ github.run_id }}

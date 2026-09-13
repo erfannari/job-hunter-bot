@@ -29,6 +29,15 @@ async function runScheduledScanner() {
   logger.info(` • Total jobs tracked in DB: ${stats.totalJobs}`);
   logger.info(` • Total matching jobs: ${stats.matchingJobs}`);
   logger.info(` • New notifications sent in this run: ${sentCount}`);
+
+  // Flush WAL to main DB file
+  try {
+    const { db } = await import('../database/db.js');
+    db.pragma('wal_checkpoint(TRUNCATE)');
+  } catch {
+    // Ignore if already flushed
+  }
+
   logger.info('✅ GitHub Actions scan finished successfully.');
 }
 
