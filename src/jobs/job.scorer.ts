@@ -340,9 +340,11 @@ export class JobScorer {
         profile: aiAnalysis.profile === 'unrelated' ? undefined : aiAnalysis.profile,
         isMatch,
         reasons,
+        reasonsFa: aiAnalysis.reasonsFa,
         concerns,
         breakdown: baseResult.breakdown,
         recommendation: aiAnalysis.recommendation,
+        summaryFa: aiAnalysis.summaryFa,
       };
     } catch {
       return baseResult;

@@ -118,9 +118,11 @@ Evaluate this job strictly and objectively. Return a JSON object matching this e
   "visaSponsorship": "yes" | "no" | "unknown",
   "relocationSupport": "yes" | "no" | "unknown",
   "recommendation": "strongly_apply" | "apply" | "consider" | "skip",
-  "reasons": string[],
-  "concerns": string[],
-  "summary": string
+  "reasons": string[] (in English),
+  "reasonsFa": string[] (in Persian / فارسی - fluent natural Persian translation and explanation of key reasons),
+  "concerns": string[] (in English),
+  "summary": string (in English),
+  "summaryFa": string (in Persian / فارسی)
 }
 `;
   }

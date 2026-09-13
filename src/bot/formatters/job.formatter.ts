@@ -48,8 +48,14 @@ export class JobFormatter {
         lines.push('');
 
         if (match.reasons.length > 0) {
-          lines.push('💡 *Why it fits your profile:*');
-          match.reasons.slice(0, 3).forEach((r) => lines.push(`🔸 ${this.escapeMarkdown(r)}`));
+          lines.push('💡 *Highlights & Fit / نکات برجسته و تطابق:*');
+          match.reasons.slice(0, 3).forEach((r, idx) => {
+            const fa = match.reasonsFa && match.reasonsFa[idx] ? match.reasonsFa[idx] : this.translateReasonToPersian(r);
+            lines.push(`🔸 *${this.escapeMarkdown(r)}*`);
+            if (fa) {
+              lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
+            }
+          });
           lines.push('');
         }
 
@@ -59,7 +65,15 @@ export class JobFormatter {
           lines.push('');
         }
       } else if (job.matchReason) {
-        lines.push(`💡 *Highlight:* ${this.escapeMarkdown(job.matchReason)}`);
+        lines.push('💡 *Highlights & Fit / نکات برجسته و تطابق:*');
+        const reasonItems = job.matchReason.split(/;\s*|\n+/).filter(Boolean);
+        reasonItems.slice(0, 3).forEach((r) => {
+          const fa = this.translateReasonToPersian(r);
+          lines.push(`🔸 *${this.escapeMarkdown(r)}*`);
+          if (fa) {
+            lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
+          }
+        });
         lines.push('');
       }
     } else {
@@ -95,8 +109,14 @@ export class JobFormatter {
         lines.push('');
 
         if (match.reasons.length > 0) {
-          lines.push('💡 *Key Alignment Reasons:*');
-          match.reasons.slice(0, 3).forEach((r) => lines.push(`🔹 ${this.escapeMarkdown(r)}`));
+          lines.push('💡 *Key Alignment Reasons / نکات برجسته و دلایل تطابق:*');
+          match.reasons.slice(0, 3).forEach((r, idx) => {
+            const fa = match.reasonsFa && match.reasonsFa[idx] ? match.reasonsFa[idx] : this.translateReasonToPersian(r);
+            lines.push(`🔹 *${this.escapeMarkdown(r)}*`);
+            if (fa) {
+              lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
+            }
+          });
           lines.push('');
         }
 
@@ -106,12 +126,67 @@ export class JobFormatter {
           lines.push('');
         }
       } else if (job.matchReason) {
-        lines.push(`💡 *Highlight:* ${this.escapeMarkdown(job.matchReason)}`);
+        lines.push('💡 *Key Alignment Reasons / نکات برجسته و دلایل تطابق:*');
+        const reasonItems = job.matchReason.split(/;\s*|\n+/).filter(Boolean);
+        reasonItems.slice(0, 3).forEach((r) => {
+          const fa = this.translateReasonToPersian(r);
+          lines.push(`🔹 *${this.escapeMarkdown(r)}*`);
+          if (fa) {
+            lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
+          }
+        });
         lines.push('');
       }
     }
 
     return lines.join('\n');
+  }
+
+  /**
+   * Translates rule-based or standard matching reasons into clean Persian
+   */
+  public translateReasonToPersian(reason: string): string {
+    const text = reason.trim();
+
+    if (/key technology match:\s*angular/i.test(text)) return 'تطابق با استک اصلی فرانت‌اند (Angular)';
+    if (/key technology match:\s*vue/i.test(text)) return 'تطابق با فریم‌ورک تخصصی ویو (Vue)';
+    if (/key technology match:\s*nuxt/i.test(text)) return 'تطابق با فریم‌ورک ناکست (Nuxt)';
+    if (/key technology match:\s*typescript/i.test(text)) return 'تطابق با مهارت کلیدی تایپ‌اسکریپت (TypeScript)';
+    if (/key technology match:\s*javascript/i.test(text)) return 'تطابق با زبان جاوااسکریپت (JavaScript)';
+    if (/key technology match:\s*html\/css/i.test(text)) return 'تطابق با مهارت‌های پایه وب HTML/CSS';
+    if (/key technology match:\s*(.+)/i.test(text)) {
+      const match = text.match(/key technology match:\s*(.+)/i);
+      return `تطابق مهارت و تکنولوژی کلیدی: ${match ? match[1] : ''}`;
+    }
+
+    if (/target frontend role/i.test(text)) return 'تطابق دقیق عنوان شغلی با فرانت‌اند دولوپر';
+    if (/frontend responsibilities highlighted/i.test(text)) return 'تاکید بر وظایف و مسئولیت‌های تخصصی فرانت‌اند';
+    if (/target design role/i.test(text)) return 'تطابق دقیق عنوان شغلی با طراحی محصول و UI/UX';
+
+    if (/core design skill match:\s*figma/i.test(text)) return 'تطابق با ابزار تخصصی فیگما (Figma)';
+    if (/core design skill match:\s*ui\/ux/i.test(text)) return 'تطابق با مهارت‌های تخصصی UI/UX';
+    if (/core design skill match:\s*product design/i.test(text)) return 'تطابق با طراحی محصول (Product Design)';
+    if (/core design skill match:\s*design systems/i.test(text)) return 'تطابق با سیستم‌های طراحی و دیزاین سیستم';
+    if (/core design skill match:\s*wireframing/i.test(text)) return 'تطابق با وایرفریمینگ و پروتوتایپینگ';
+    if (/core design skill match:\s*user research/i.test(text)) return 'تطابق با تحقیقات کاربر (User Research)';
+    if (/core design skill match:\s*(.+)/i.test(text)) {
+      const match = text.match(/core design skill match:\s*(.+)/i);
+      return `تطابق مهارت تخصصی طراحی: ${match ? match[1] : ''}`;
+    }
+
+    if (/experience requirement.*5-year background/i.test(text)) return 'سابقه کار مورد نیاز با رزومه ۵ ساله شما همخوانی ایده‌آل دارد';
+    if (/product design experience criteria.*satisfied/i.test(text)) return 'معیار سابقه کار طراحی محصول (۱-۲ سال) منطبق است';
+    if (/ui\/ux design experience criteria.*satisfied/i.test(text)) return 'معیار سابقه کار طراحی UI/UX (۳-۴ سال) منطبق است';
+
+    if (/directly based in georgia/i.test(text)) return 'موقعیت مکانی مستقر در گرجستان';
+    if (/remote opportunity available from georgia/i.test(text)) return 'امکان همکاری به صورت دورکاری / ریموت از گرجستان';
+    if (/flexible workplace:\s*hybrid/i.test(text)) return 'محیط کاری منعطف و هیبریدی';
+    if (/flexible workplace:\s*remote/i.test(text)) return 'محیط کاری کاملاً ریموت (دورکاری)';
+    if (/fresh job: posted within the last 24 hours/i.test(text)) return 'آگهی جدید: منتشر شده طی ۲۴ ساعت گذشته';
+    if (/recently posted/i.test(text)) return 'آگهی جدید: ثبت شده در چند روز اخیر';
+    if (/visa sponsorship:\s*yes/i.test(text)) return 'پشتیبانی از ویزای کاری و اقامت';
+
+    return text;
   }
 
   /**

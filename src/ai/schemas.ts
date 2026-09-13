@@ -13,9 +13,11 @@ export const aiJobAnalysisSchema = z.object({
   visaSponsorship: z.enum(['yes', 'no', 'unknown']).default('unknown'),
   relocationSupport: z.enum(['yes', 'no', 'unknown']).default('unknown'),
   recommendation: z.enum(['strongly_apply', 'apply', 'consider', 'skip']).describe('Actionable recommendation for the candidate'),
-  reasons: z.array(z.string()).describe('List of key positive matching reasons'),
-  concerns: z.array(z.string()).describe('List of potential red flags, mismatches, or missing details'),
-  summary: z.string().describe('One concise sentence summarizing the role and its fit'),
+  reasons: z.array(z.string()).describe('List of key positive matching reasons in English'),
+  reasonsFa: z.array(z.string()).default([]).describe('List of key positive matching reasons in Persian (نکات برجسته و دلایل تطابق به زبان فارسی)'),
+  concerns: z.array(z.string()).describe('List of potential red flags, mismatches, or missing details in English'),
+  summary: z.string().describe('One concise sentence summarizing the role and its fit in English'),
+  summaryFa: z.string().default('').describe('One concise sentence summarizing the role and its fit in Persian (خلاصه موقعیت به زبان فارسی)'),
 });
 
 export type AIJobAnalysis = z.infer<typeof aiJobAnalysisSchema>;
