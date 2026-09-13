@@ -3,139 +3,7 @@ import { Job, MatchResult } from '../../jobs/types.js';
 
 export class JobFormatter {
   /**
-   * Translates common match reasons into natural Persian (Farsi)
-   */
-  public translateReasonToPersian(reason: string): string {
-    const trimmed = reason.trim();
-
-    // If already in Persian, return directly
-    if (/[\u0600-\u06FF]/.test(trimmed)) {
-      return trimmed;
-    }
-
-    // Role / Title Matches
-    const frontendRoleMatch = trimmed.match(/^Target Frontend role:\s*["']?([^"']+)["']?/i);
-    if (frontendRoleMatch) {
-      return `موقعیت شغلی تخصصی فرانت‌اند: ${frontendRoleMatch[1]}`;
-    }
-    if (/frontend responsibilities highlighted/i.test(trimmed)) {
-      return 'شامل وظایف و مسئولیت‌های کلیدی فرانت‌اند';
-    }
-
-    const designRoleMatch = trimmed.match(/^Target Design role:\s*["']?([^"']+)["']?/i);
-    if (designRoleMatch) {
-      return `موقعیت شغلی تخصصی طراحی / UI-UX: ${designRoleMatch[1]}`;
-    }
-
-    // Tech / Skills Matches
-    const techMatch = trimmed.match(/^Key technology match:\s*(.+)$/i);
-    if (techMatch) {
-      return `تطابق تکنولوژی کلیدی: ${techMatch[1]}`;
-    }
-
-    const designSkillMatch = trimmed.match(/^Core design skill match:\s*(.+)$/i);
-    if (designSkillMatch) {
-      return `تطابق مهارت اصلی طراحی: ${designSkillMatch[1]}`;
-    }
-
-    // Experience Matches
-    const expMatch = trimmed.match(/Experience requirement\s*\((\d+)\s*yrs\)\s*matches your 5-year background/i);
-    if (expMatch) {
-      return `سابقه درخواستی (${expMatch[1]} سال) منطبق با ۵ سال تجربه کاری شماست`;
-    }
-    if (/Product design experience criteria/i.test(trimmed)) {
-      return 'تطابق با سابقه کاری درخواستی طراحی محصول (۱ تا ۲ سال)';
-    }
-    if (/UI\/UX design experience criteria/i.test(trimmed)) {
-      return 'تطابق با سابقه کاری درخواستی طراحی UI/UX (۳ تا ۴ سال)';
-    }
-
-    // Location & Workplace Matches
-    const locMatch = trimmed.match(/^Directly based in Georgia\s*\((.+)\)$/i);
-    if (locMatch) {
-      return `مستقر در گرجستان (${locMatch[1]})`;
-    }
-    if (/Remote opportunity available from Georgia/i.test(trimmed)) {
-      return 'امکان دورکاری کامل از گرجستان';
-    }
-    if (/Flexible workplace:\s*hybrid/i.test(trimmed)) {
-      return 'محیط کاری منعطف: هیبریدی (حضوری + دورکاری)';
-    }
-    if (/Flexible workplace:\s*remote/i.test(trimmed)) {
-      return 'محیط کاری منعطف: کاملاً دورکاری (Remote)';
-    }
-    const flexWorkplace = trimmed.match(/^Flexible workplace:\s*(.+)$/i);
-    if (flexWorkplace) {
-      return `نوع محیط کاری: ${flexWorkplace[1]}`;
-    }
-
-    // Freshness & Visa Matches
-    if (/Fresh job:\s*posted within the last 24 hours/i.test(trimmed)) {
-      return 'فرصت شغلی تازه: ثبت شده در ۲۴ ساعت گذشته';
-    }
-    if (/Recently posted\s*\(within 3 days\)/i.test(trimmed)) {
-      return 'آگهی جدید (طی ۳ روز گذشته)';
-    }
-    if (/Visa sponsorship:\s*yes/i.test(trimmed)) {
-      return 'امکان اسپانسر ویزا و اقامت';
-    }
-
-    // Common AI Semantic sentences translations
-    if (/Angular/i.test(trimmed) && /stack|match|experience/i.test(trimmed)) {
-      return `تطابق تخصص با فریم‌ورک Angular`;
-    }
-    if (/Vue|Nuxt/i.test(trimmed) && /stack|match|experience/i.test(trimmed)) {
-      return `تطابق تخصص با فریم‌ورک Vue / Nuxt`;
-    }
-    if (/Figma/i.test(trimmed) && /UI|UX|design/i.test(trimmed)) {
-      return `تطابق مهارت دیزاین با ابزار Figma`;
-    }
-    if (/English/i.test(trimmed) && /environment|team|compatible/i.test(trimmed)) {
-      return `محیط کاری سازگار با زبان انگلیسی`;
-    }
-
-    return `انطباق با نیازمندی‌های شغلی: ${trimmed}`;
-  }
-
-  /**
-   * Translates concerns/notes into Persian
-   */
-  public translateConcernToPersian(concern: string): string {
-    const trimmed = concern.trim();
-    if (/[\u0600-\u06FF]/.test(trimmed)) {
-      return trimmed;
-    }
-
-    if (/Requires Russian or non-English/i.test(trimmed)) {
-      return 'نیاز به زبان روسی یا غیرانگلیسی (عدم پذیرش انگلیسی)';
-    }
-    if (/Role does not match Frontend or Design/i.test(trimmed)) {
-      return 'عنوان شغلی با فیلدهای هدف فرانت‌اند یا طراحی منطبق نیست';
-    }
-    if (/Few primary frontend technologies/i.test(trimmed)) {
-      return 'تعداد کمی از تکنولوژی‌های اصلی فرانت‌اند مستقیماً ذکر شده است';
-    }
-    const highExp = trimmed.match(/High experience requested:\s*(\d+)\+?\s*years/i);
-    if (highExp) {
-      return `سابقه درخواستی بالا: ${highExp[1]}+ سال`;
-    }
-    if (/Remote role restricted to other regions/i.test(trimmed)) {
-      return 'موقعیت دورکاری محدود به کشورها یا مناطق دیگر است';
-    }
-    if (/Junior \/ Entry-level role/i.test(trimmed)) {
-      return 'سطح شغلی جونیور یا کارآموزی';
-    }
-    const negMatch = trimmed.match(/Negative title match:\s*contains\s*["']?([^"']+)["']?/i);
-    if (negMatch) {
-      return `شامل کلمات نامرتبط در عنوان (${negMatch[1]})`;
-    }
-
-    return trimmed;
-  }
-
-  /**
-   * Formats a job and match result into visually distinct Frontend vs Design Telegram cards
-   * with bilingual (English + Persian) highlight and fit explanations.
+   * Formats a job and match result into visually distinct Frontend vs Design Telegram cards (English only)
    */
   public formatJobCard(job: Job, match?: MatchResult): string {
     const score = match?.score ?? job.matchScore ?? 0;
@@ -180,34 +48,20 @@ export class JobFormatter {
         lines.push('');
 
         if (match.reasons.length > 0) {
-          lines.push('💡 *Highlight & Fit / نکات کلیدی و تطابق:*');
-          match.reasons.slice(0, 3).forEach((r) => {
-            const fa = this.translateReasonToPersian(r);
-            lines.push(`🔸 ${this.escapeMarkdown(r)}`);
-            lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
-          });
+          lines.push('💡 *Why it fits your profile:*');
+          match.reasons.slice(0, 3).forEach((r) => lines.push(`🔸 ${this.escapeMarkdown(r)}`));
           lines.push('');
         }
 
         if (match.concerns.length > 0) {
-          lines.push('⚠️ *Notes & Considerations / نکات قابل توجه:*');
-          match.concerns.slice(0, 2).forEach((c) => {
-            const fa = this.translateConcernToPersian(c);
-            lines.push(`▫️ ${this.escapeMarkdown(c)}`);
-            if (fa !== c) {
-              lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
-            }
-          });
+          lines.push('⚠️ *Notes & Considerations:*');
+          match.concerns.slice(0, 2).forEach((c) => lines.push(`▫️ ${this.escapeMarkdown(c)}`));
           lines.push('');
         }
       } else if (job.matchReason) {
         const rawReasons = job.matchReason.split(/;\s*|\n/).filter(Boolean);
-        lines.push('💡 *Highlight & Fit / نکات کلیدی و تطابق:*');
-        rawReasons.slice(0, 3).forEach((r) => {
-          const fa = this.translateReasonToPersian(r);
-          lines.push(`🔸 ${this.escapeMarkdown(r)}`);
-          lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
-        });
+        lines.push('💡 *Highlight & Fit:*');
+        rawReasons.slice(0, 3).forEach((r) => lines.push(`🔸 ${this.escapeMarkdown(r)}`));
         lines.push('');
       }
     } else {
@@ -243,34 +97,20 @@ export class JobFormatter {
         lines.push('');
 
         if (match.reasons.length > 0) {
-          lines.push('💡 *Highlight & Fit / نکات کلیدی و تطابق:*');
-          match.reasons.slice(0, 3).forEach((r) => {
-            const fa = this.translateReasonToPersian(r);
-            lines.push(`🔹 ${this.escapeMarkdown(r)}`);
-            lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
-          });
+          lines.push('💡 *Key Alignment Reasons:*');
+          match.reasons.slice(0, 3).forEach((r) => lines.push(`🔹 ${this.escapeMarkdown(r)}`));
           lines.push('');
         }
 
         if (match.concerns.length > 0) {
-          lines.push('⚠️ *Considerations / نکات قابل توجه:*');
-          match.concerns.slice(0, 2).forEach((c) => {
-            const fa = this.translateConcernToPersian(c);
-            lines.push(`▫️ ${this.escapeMarkdown(c)}`);
-            if (fa !== c) {
-              lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
-            }
-          });
+          lines.push('⚠️ *Considerations:*');
+          match.concerns.slice(0, 2).forEach((c) => lines.push(`▫️ ${this.escapeMarkdown(c)}`));
           lines.push('');
         }
       } else if (job.matchReason) {
         const rawReasons = job.matchReason.split(/;\s*|\n/).filter(Boolean);
-        lines.push('💡 *Highlight & Fit / نکات کلیدی و تطابق:*');
-        rawReasons.slice(0, 3).forEach((r) => {
-          const fa = this.translateReasonToPersian(r);
-          lines.push(`🔹 ${this.escapeMarkdown(r)}`);
-          lines.push(`   🇮🇷 _${this.escapeMarkdown(fa)}_`);
-        });
+        lines.push('💡 *Highlight & Fit:*');
+        rawReasons.slice(0, 3).forEach((r) => lines.push(`🔹 ${this.escapeMarkdown(r)}`));
         lines.push('');
       }
     }

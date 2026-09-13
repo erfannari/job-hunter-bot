@@ -119,10 +119,8 @@ Evaluate this job strictly and objectively. Return a JSON object matching this e
   "relocationSupport": "yes" | "no" | "unknown",
   "recommendation": "strongly_apply" | "apply" | "consider" | "skip",
   "reasons": string[] (in English),
-  "persianReasons": string[] (in Persian / Farsi),
   "concerns": string[],
-  "summary": string (in English),
-  "persianSummary": string (in Persian / Farsi, summarizing key match highlight)
+  "summary": string (in English)
 }
 `;
   }

@@ -14,10 +14,8 @@ export const aiJobAnalysisSchema = z.object({
   relocationSupport: z.enum(['yes', 'no', 'unknown']).default('unknown'),
   recommendation: z.enum(['strongly_apply', 'apply', 'consider', 'skip']).describe('Actionable recommendation for the candidate'),
   reasons: z.array(z.string()).describe('List of key positive matching reasons in English'),
-  persianReasons: z.array(z.string()).optional().describe('Persian (Farsi) translation of key matching reasons'),
   concerns: z.array(z.string()).describe('List of potential red flags, mismatches, or missing details'),
   summary: z.string().describe('One concise sentence in English summarizing the role and its fit'),
-  persianSummary: z.string().optional().describe('One concise sentence in Persian (Farsi) summarizing the role and why it fits'),
 });
 
 export type AIJobAnalysis = z.infer<typeof aiJobAnalysisSchema>;
