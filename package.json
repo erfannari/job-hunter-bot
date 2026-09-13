@@ -1,0 +1,37 @@
+{
+  "name": "georgia-job-hunter",
+  "version": "1.0.0",
+  "description": "Personal Telegram job-hunting agent for newly posted relevant jobs in Georgia",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "scan:dev": "tsx src/jobs/run_phase3.ts"
+  },
+  "keywords": [
+    "job-hunter",
+    "telegram-bot",
+    "georgia",
+    "frontend",
+    "design"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^2.22.0",
+    "better-sqlite3": "^13.0.3",
+    "cheerio": "^1.2.0",
+    "dotenv": "^16.4.7",
+    "grammy": "^1.35.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^22.13.9",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
